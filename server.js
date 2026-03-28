@@ -233,7 +233,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.post('/api/generate-reply', async (req, res) => {
   try {
     const { tweetText } = req.body;
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Change this line (approx line 236)
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
       You are a veteran Solana trader. Your personality is "Chill, Experienced, and Deliberate."
