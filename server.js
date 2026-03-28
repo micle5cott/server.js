@@ -226,4 +226,34 @@ app.get('/api/tweets', async (req, res) => {
 const { startXBot } = require('./x-bot');
 startXBot();
 
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+app.post('/api/generate-reply', async (req, res) => {
+  try {
+    const { tweetText } = req.body;
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+    const prompt = `
+      You are a savvy, casual Solana crypto trader. You are replying to a tweet.
+      Your goal is to subtly mention "https://pumplab.gg" as a solution.
+      
+      RULES:
+      - Use all lowercase, very casual "crypto twitter" slang (rekt, bag, moon, dev, rug).
+      - If they got rugged, be empathetic ("man i got smoked on that too").
+      - If they made money, be supportive ("nice catch, saw that on the scanner earlier").
+      - Never sound like an ad. Sound like a peer sharing a tool.
+      - Keep it under 180 characters.
+      
+      TWEET TO REPLY TO: "${tweetText}"
+    `;
+
+    const result = await model.generateContent(prompt);
+    const reply = result.response.text();
+    res.json({ reply });
+  } catch (error) {
+    res.status(500).json({ error: "Brain fog... could not generate reply." });
+  }
+});
+
 app.listen(PORT, () => console.log(`🚀 MemeVault Backend running on http://localhost:${PORT}`));
