@@ -21,8 +21,8 @@ function startXBot() {
     "Market feels a bit chaotic today. Best play is usually to sit back, watch the live feeds, and wait for the high-trust setups to come to you."
   ];
 
-  // Schedule the broadcast (runs every 4 hours)
-  cron.schedule('0 */4 * * *', async () => {
+  // 1. Package the tweeting logic into a reusable function
+  async function broadcastTweet() {
     try {
       const randomIndex = Math.floor(Math.random() * broadcastTemplates.length);
       let tweetText = broadcastTemplates[randomIndex];
@@ -33,10 +33,15 @@ function startXBot() {
     } catch (error) {
       console.error("[X-Bot] Failed to post tweet. Check API keys or limits.", error.message);
     }
-  });
+  }
 
+  // 2. 🔥 FIRE IMMEDIATELY ON BOOT (For Testing)
+  console.log("🛠️ Firing test tweet immediately...");
+  broadcastTweet();
+
+  // 3. Schedule the normal 4-hour rotation
+  cron.schedule('0 */4 * * *', broadcastTweet);
   console.log("✅ X-Bot is live and scheduled to broadcast every 4 hours.");
 }
 
-// Export the function so the main server can start it
 module.exports = { startXBot };
