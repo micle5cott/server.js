@@ -233,10 +233,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.post('/api/generate-reply', async (req, res) => {
   try {
     const { tweetText } = req.body;
-    // Force the use of v1beta to access the 1.5 models
-// server.js - Update your model initialization (approx line 236)
+// server.js - Update to the 2026 stable standard
 const model = genAI.getGenerativeModel({ 
-  model: "gemini-3-flash-preview" 
+  model: "gemini-2.5-flash" 
 });
 
     const prompt = `
