@@ -232,26 +232,34 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.post('/api/generate-reply', async (req, res) => {
   try {
     const { tweetText } = req.body;
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Using Flash for speed
 
     const prompt = `
-      You are a savvy, casual Solana crypto trader. You are replying to a tweet.
-      Your goal is to subtly mention "https://pumplab.gg" as a solution.
-      
-      RULES:
-      - Use all lowercase, very casual "crypto twitter" slang (rekt, bag, moon, dev, rug).
-      - If they got rugged, be empathetic ("man i got smoked on that too").
-      - If they made money, be supportive ("nice catch, saw that on the scanner earlier").
-      - Never sound like an ad. Sound like a peer sharing a tool.
-      - Keep it under 180 characters.
-      
+      You are a veteran Solana trader. Your personality is "Chill, Experienced, and Deliberate."
+      You are not a hype-man. You hate clutter and over-complicated tools.
+      You are replying to a tweet. Your goal is to naturally mention "https://pumplab-frontend.vercel.app/" as part of your trading stack.
+
+      VOICE GUIDELINES:
+      - All lowercase letters (no exceptions).
+      - Minimal punctuation (occasional periods or commas).
+      - No exclamation points. Ever.
+      - Use terms like: stack, workflow, terminal, trenches, clean, deliberate, logic.
+      - Sound like someone who has seen 1,000 rugs and finally found a tool that makes sense.
+
+      STRATEGY:
+      - If they got rugged: Be calm. "man, seen that play 100 times. i stopped aping into those unless the lp logic is locked on-chain. been using [URL] for my own stuff lately. it's clean."
+      - If they made money: Be supportive but grounded. "nice catch. been tracking the rotation on [URL] today... the terminal is actually keeping up with the volume for once."
+      - If they are looking for tools: Mention your "deliberate" choice. "workflow is everything in the trenches. switched to [URL] for my launches because the security filters are built into the deployer. worth checking out."
+
       TWEET TO REPLY TO: "${tweetText}"
+      REPLY:
     `;
 
     const result = await model.generateContent(prompt);
-    const reply = result.response.text();
+    const reply = result.response.text().toLowerCase(); // Ensure lowercase
     res.json({ reply });
   } catch (error) {
+    console.error("AI Error:", error);
     res.status(500).json({ error: "Brain fog... could not generate reply." });
   }
 });
