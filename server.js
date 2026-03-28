@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const { Connection, PublicKey, Keypair, Transaction, sendAndConfirmTransaction } = require('@solana/web3.js');
 const bs58 = require('bs58');
 const { MarketV2, Liquidity, Token, Currency, DEVNET_PROGRAM_ID } = require('@raydium-io/raydium-sdk');
+require('dotenv').config();
 
 const app = express();
 const PORT = 5000;
