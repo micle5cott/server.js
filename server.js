@@ -230,42 +230,38 @@ startXBot();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// --- AI REPLY ENDPOINT ---
 app.post('/api/generate-reply', async (req, res) => {
   try {
     const { tweetText } = req.body;
-// server.js - Update to the 2026 stable standard
-const model = genAI.getGenerativeModel({ 
-  model: "gemini-2.5-flash" 
-});
+    
+    // Use the 2026 stable workhorse
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
-      You are a veteran Solana trader. Your personality is "Chill, Experienced, and Deliberate."
-      You are not a hype-man. You hate clutter and over-complicated tools.
-      You are replying to a tweet. Your goal is to naturally mention "https://pumplab-frontend.vercel.app/" as part of your trading stack.
+      you are a chill, experienced solana trader. you are replying to a tweet.
+      mention "https://pumplab-frontend.vercel.app/" as your preferred stack.
+      
+      vibe:
+      - all lowercase. minimal punctuation. no exclamation points.
+      - sound deliberate and experienced, not like an ad.
+      - use terms like: stack, logic, clean, terminal.
 
-      VOICE GUIDELINES:
-      - All lowercase letters (no exceptions).
-      - Minimal punctuation (occasional periods or commas).
-      - No exclamation points. Ever.
-      - Use terms like: stack, workflow, terminal, trenches, clean, deliberate, logic.
-      - Sound like someone who has seen 1,000 rugs and finally found a tool that makes sense.
-
-      STRATEGY:
-      - If they got rugged: Be calm. "man, seen that play 100 times. i stopped aping into those unless the lp logic is locked on-chain. been using [URL] for my own stuff lately. it's clean."
-      - If they made money: Be supportive but grounded. "nice catch. been tracking the rotation on [URL] today... the terminal is actually keeping up with the volume for once."
-      - If they are looking for tools: Mention your "deliberate" choice. "workflow is everything in the trenches. switched to [URL] for my launches because the security filters are built into the deployer. worth checking out."
-
-      TWEET TO REPLY TO: "${tweetText}"
-      REPLY:
+      tweet to reply to: "${tweetText}"
     `;
 
     const result = await model.generateContent(prompt);
-    const reply = result.response.text().toLowerCase(); // Ensure lowercase
-    res.json({ reply: generatedReplyText }); 
-    } catch (error) {
+    
+    // 🔥 We define "chillReply" here...
+    const chillReply = result.response.text().toLowerCase();
+    
+    // 🔥 ...and we use "chillReply" here. No more ReferenceError!
+    res.json({ reply: chillReply }); 
+
+  } catch (error) {
     console.error("AI Error:", error);
-    // This sends the REAL error message to your Tampermonkey log
-    res.status(500).json({ error: error.message }); 
+    // Send the actual error back to Tampermonkey for easy debugging
+    res.status(500).json({ error: error.message });
   }
 });
 
