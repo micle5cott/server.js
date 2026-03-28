@@ -234,10 +234,10 @@ app.post('/api/generate-reply', async (req, res) => {
   try {
     const { tweetText } = req.body;
     // Force the use of v1beta to access the 1.5 models
-const model = genAI.getGenerativeModel(
-  { model: "gemini-1.5-flash" },
-  { apiVersion: "v1beta" }
-);
+// server.js - Update your model initialization (approx line 236)
+const model = genAI.getGenerativeModel({ 
+  model: "gemini-3-flash-preview" 
+});
 
     const prompt = `
       You are a veteran Solana trader. Your personality is "Chill, Experienced, and Deliberate."
