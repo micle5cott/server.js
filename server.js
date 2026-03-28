@@ -235,7 +235,7 @@ app.post('/api/filter-reddit', async (req, res) => {
   try {
     const { posts } = req.body;
     
-    // We use the fast 2.5 Flash model for rapid sorting
+    // We use the 2.5 Flash model for rapid sorting
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
