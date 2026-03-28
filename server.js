@@ -230,38 +230,46 @@ startXBot();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- AI REPLY ENDPOINT ---
 app.post('/api/generate-reply', async (req, res) => {
   try {
     const { tweetText } = req.body;
     
-    // Use the 2026 stable workhorse
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    // Using Gemini 3 Flash - the 2026 standard for speed and accuracy
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash" });
 
     const prompt = `
-      you are a chill, experienced solana trader. you are replying to a tweet.
-      mention "https://pumplab-frontend.vercel.app/" as your preferred stack.
-      
-      vibe:
-      - all lowercase. minimal punctuation. no exclamation points.
-      - sound deliberate and experienced, not like an ad.
-      - use terms like: stack, logic, clean, terminal.
+      You are a high-level filter for a Solana trading bot. 
+      Analyze the following tweet text and determine if it fits one of these three categories:
+      1. RUG/LOSS: Someone complaining about losing money, getting rugged, or a dev exit-scamming.
+      2. PROFIT/ALPHA: Someone celebrating gains, a successful launch, or finding a 'gem'.
+      3. TOOL COMPLAINT: Someone frustrated with slow charts, lagging terminals, or bad scanners.
 
-      tweet to reply to: "${tweetText}"
+      CRITERIA:
+      - If it is a generic news headline, a bot spamming, or unrelated to Solana/Meme coins, you MUST respond with "SKIP".
+      - If it fits, generate a chill, lowercase, experienced reply mentioning "https://pumplab-frontend.vercel.app/" naturally.
+
+      TWEET: "${tweetText}"
+
+      RESPONSE FORMAT:
+      If irrelevant: SKIP
+      If relevant: [your reply here]
     `;
 
     const result = await model.generateContent(prompt);
-    
-    // 🔥 We define "chillReply" here...
-    const chillReply = result.response.text().toLowerCase();
-    
-    // 🔥 ...and we use "chillReply" here. No more ReferenceError!
-    res.json({ reply: chillReply }); 
+    const aiResponse = result.response.text().trim();
+
+    if (aiResponse.toUpperCase() === "SKIP") {
+      return res.json({ relevant: false });
+    }
+
+    res.json({ 
+      relevant: true, 
+      reply: aiResponse.toLowerCase() 
+    });
 
   } catch (error) {
-    console.error("AI Error:", error);
-    // Send the actual error back to Tampermonkey for easy debugging
-    res.status(500).json({ error: error.message });
+    console.error("Gatekeeper Error:", error);
+    res.status(500).json({ error: "Brain fog..." });
   }
 });
 
