@@ -230,46 +230,45 @@ startXBot();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-app.post('/api/generate-reply', async (req, res) => {
+// --- REDDIT BULK FILTER ENDPOINT ---
+app.post('/api/filter-reddit', async (req, res) => {
   try {
-    const { tweetText } = req.body;
+    const { posts } = req.body;
     
-    // Using Gemini 3 Flash - the 2026 standard for speed and accuracy
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash" });
+    // We use the fast 2.5 Flash model for rapid sorting
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
-      You are a high-level filter for a Solana trading bot. 
-      Analyze the following tweet text and determine if it fits one of these three categories:
-      1. RUG/LOSS: Someone complaining about losing money, getting rugged, or a dev exit-scamming.
-      2. PROFIT/ALPHA: Someone celebrating gains, a successful launch, or finding a 'gem'.
-      3. TOOL COMPLAINT: Someone frustrated with slow charts, lagging terminals, or bad scanners.
+      You are a filtering system for a Solana trading tool.
+      I will give you a list of Reddit posts. You need to find ONE post where the user is:
+      1. Complaining about getting rugged or scammed.
+      2. Complaining about slow charts, lagging terminals, or bad tools (like DexScreener).
+      3. Asking for advice on finding new meme coins or trading setups.
 
-      CRITERIA:
-      - If it is a generic news headline, a bot spamming, or unrelated to Solana/Meme coins, you MUST respond with "SKIP".
-      - If it fits, generate a chill, lowercase, experienced reply mentioning "https://pumplab-frontend.vercel.app/" naturally.
+      Do NOT select posts that are just generic news, memes, or shills for other coins.
+      
+      POSTS TO ANALYZE:
+      ${JSON.stringify(posts)}
 
-      TWEET: "${tweetText}"
-
-      RESPONSE FORMAT:
-      If irrelevant: SKIP
-      If relevant: [your reply here]
+      Respond strictly with a JSON object containing the ID of the best post. 
+      If none of them are a good fit, return null.
+      Format: {"targetId": "post_id_here"} OR {"targetId": null}
     `;
 
     const result = await model.generateContent(prompt);
-    const aiResponse = result.response.text().trim();
-
-    if (aiResponse.toUpperCase() === "SKIP") {
-      return res.json({ relevant: false });
+    
+    // Clean the response to ensure it's valid JSON
+    let aiResponse = result.response.text().trim();
+    if (aiResponse.startsWith("```json")) {
+        aiResponse = aiResponse.replace(/```json/g, "").replace(/```/g, "").trim();
     }
-
-    res.json({ 
-      relevant: true, 
-      reply: aiResponse.toLowerCase() 
-    });
+    
+    const parsedData = JSON.parse(aiResponse);
+    res.json(parsedData); 
 
   } catch (error) {
-    console.error("Gatekeeper Error:", error);
-    res.status(500).json({ error: "Brain fog..." });
+    console.error("Reddit AI Filter Error:", error);
+    res.status(500).json({ error: "Brain fog...", targetId: null });
   }
 });
 
