@@ -11,7 +11,8 @@ const { MarketV2, Liquidity, Token, Currency, DEVNET_PROGRAM_ID } = require('@ra
 require('dotenv').config();
 
 const app = express();
-const PORT = 5000;
+// 🔥 Let Render dictate the port, but fallback to 5000 on your Mac
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -26,9 +27,15 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // --- DATABASE SETUP (MONGODB) ---
-mongoose.connect('mongodb://127.0.0.1:27017/memevault')
+// 🔥 Use Render's Environment Variable if available, otherwise try localhost
+const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/memevault';
+
+mongoose.connect(mongoURI)
   .then(() => console.log('🟢 MongoDB Connected'))
-  .catch(err => console.error('🔴 MongoDB Connection Error:', err));
+  .catch(err => {
+      console.error('🔴 MongoDB Connection Error: No local/cloud DB found.');
+      console.log('⚠️ Running in DB-less mode (Database saves will fail, but the app will stay alive)');
+  });
 
 const TokenSchema = new mongoose.Schema({
   name: String,
